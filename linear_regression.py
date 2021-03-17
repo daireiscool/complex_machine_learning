@@ -152,7 +152,7 @@ class ComplexLinearRegression():
         ::param weights: (numpy array)
         ::return: (complex)
         """
-        return np.array([np.linalg.norm(i) for i in X.dot(weights)])
+        return np.abs(X.dot(weights))
 
     def predict(self, X):
         """
@@ -165,7 +165,7 @@ class ComplexLinearRegression():
         """
         X = np.c_[X, np.ones(len(X))]
         weights = self.weights
-        return np.array([np.linalg.norm(i) for i in X.dot(weights)])
+        return np.abs(X.dot(weights))
 
 
 class LinearRegression():

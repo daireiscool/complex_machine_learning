@@ -94,7 +94,7 @@ class ComplexLinearClassification():
         ::param z: (complex)
         ::return: (boolean)
         """
-        return True if (z.imag/z.real) > 0 else False
+        return np.sign(z.imag/z.real)
 
     def error(self, y, y_pred):
         """
@@ -174,7 +174,7 @@ class ComplexLinearClassification():
         ::param weights: (numpy array)
         ::return: (complex)
         """
-        return np.array([self.sigmoid(i) for i in X.dot(weights)])
+        return self.sigmoid(X.dot(weights))
 
     def predict(self, X):
         """
@@ -187,7 +187,7 @@ class ComplexLinearClassification():
         """
         X = np.c_[X, np.ones(len(X))]
         weights = self.weights
-        return np.array([self.activation(i) for i in X.dot(self.weights)])
+        return self.activation(X.dot(self.weights))
 
 
 
@@ -270,7 +270,7 @@ class LinearClassification():
         ::param z: (complex)
         ::return: (boolean)
         """
-        return True if z > 0 else False
+        return np.sign(z)
 
     def error(self, y, y_pred):
         """
@@ -356,4 +356,4 @@ class LinearClassification():
         """
         X = np.c_[X, np.ones(len(X))]
         weights = self.weights
-        return np.array([self.activation(i) for i in X.dot(self.weights)])
+        return self.activation(X.dot(self.weights))
