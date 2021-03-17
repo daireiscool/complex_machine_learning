@@ -1,5 +1,5 @@
 """
-Methods to perform linear classification.
+Methods to perform linear regression.
 
 I have a Complex method, and a Real method to compare against.
 
@@ -14,11 +14,9 @@ import numpy as np
 import random
 import tqdm
 
-class ComplexLinearClassification():
+class ComplexLinearRegression():
     """
-    Method to apply linear classification using complex coefficients.
-    
-    Activation function is sign(atan(z)).
+    Method to apply linear regression using complex coefficients.
     
     Using a manual Random Search Algorithim.
     
@@ -43,8 +41,6 @@ class ComplexLinearClassification():
         ::random_state: (int) default = 0
         ::param n_iter: (int) default 10000
         ::param verbose: (boolean), default = False
-        ::param stocastic: (boolean), default = True
-        ::param p: (float), default = 0.1
         """
         self.alpha = alpha
         self.epoch = epoch
@@ -77,24 +73,6 @@ class ComplexLinearClassification():
             random.randint(-10, 10) +
             random.randint(-10, 10)*1j
             for i in list(range(n))])
-
-    def sigmoid(self, z):
-        """
-        Function to apply sigmoid function.
-        
-        ::param z: (complex)
-        ::return: (boolean)
-        """
-        return 1/(1+np.exp(-1*z.imag/z.real))
-    
-    def activation(self, z):
-        """
-        Function to convert a complex number to a boolean.
-        
-        ::param z: (complex)
-        ::return: (boolean)
-        """
-        return True if (z.imag/z.real) > 0 else False
 
     def error(self, y, y_pred):
         """
@@ -174,7 +152,7 @@ class ComplexLinearClassification():
         ::param weights: (numpy array)
         ::return: (complex)
         """
-        return np.array([self.sigmoid(i) for i in X.dot(weights)])
+        return np.array([np.linalg.norm(i) for i in X.dot(weights)])
 
     def predict(self, X):
         """
@@ -187,16 +165,13 @@ class ComplexLinearClassification():
         """
         X = np.c_[X, np.ones(len(X))]
         weights = self.weights
-        return np.array([self.activation(i) for i in X.dot(self.weights)])
+        return np.array([np.linalg.norm(i) for i in X.dot(weights)])
 
 
-
-class LinearClassification():
+class LinearRegression():
     """
-    Method to apply linear classification using real coefficients.
-    
-    Activation function is sign(atan(z)).
-    
+    Method to apply linear regression using real coefficients.
+        
     Using a manual Random Search Algorithim.
     
     """
@@ -220,8 +195,6 @@ class LinearClassification():
         ::random_state: (int) default = 0
         ::param n_iter: (int) default 10000
         ::param verbose: (boolean), default = False
-        ::param stocastic: (boolean), default = True
-        ::param p: (float), default = 0.1
         """
         self.alpha = alpha
         self.epoch = epoch
@@ -253,24 +226,6 @@ class LinearClassification():
         return np.array([
             random.randint(-10, 10)
             for i in list(range(n))])
-
-    def sigmoid(self, z):
-        """
-        Function to apply sigmoid function.
-        
-        ::param z: (complex)
-        ::return: (boolean)
-        """
-        return 1/(1+np.exp(-1*z))
-    
-    def activation(self, z):
-        """
-        Function to convert a complex number to a boolean.
-        
-        ::param z: (complex)
-        ::return: (boolean)
-        """
-        return True if z > 0 else False
 
     def error(self, y, y_pred):
         """
@@ -343,7 +298,7 @@ class LinearClassification():
         ::param weights: (numpy array)
         ::return: (complex)
         """
-        return np.array([self.sigmoid(i) for i in X.dot(weights)])
+        return np.array([np.linalg.norm(i) for i in X.dot(weights)])
 
     def predict(self, X):
         """
@@ -356,4 +311,4 @@ class LinearClassification():
         """
         X = np.c_[X, np.ones(len(X))]
         weights = self.weights
-        return np.array([self.activation(i) for i in X.dot(self.weights)])
+        return np.array([np.linalg.norm(i) for i in X.dot(weights)])
