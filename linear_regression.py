@@ -104,23 +104,12 @@ class ComplexLinearRegression():
             loss = self.error(y, self._predict(X, temp_weights))
             self._print(f"Initial Loss: {loss}")
             
-            weights_alpha = [
-                a*(0 + 1 * 1j) * self.alpha,
-                a*(0 - 1 * 1j) * self.alpha,
-                a*(1 + 0 * 1j) * self.alpha,
-                a*(1 + 1 * 1j) * self.alpha,
-                a*(1 - 1 * 1j) * self.alpha,
-                a*(-1 + 0 * 1j) * self.alpha,
-                a*(-1 + 1 * 1j) * self.alpha,
-                a*(-1 - 1 * 1j) * self.alpha]
-        
+            weights_alpha = [(j[0]+j[1]*1j) for j in 
+                np.transpose([np.tile([0,1,-1], 3), np.repeat([0,1,-1], 3)])]
+
             for w in weights_alpha:
-                if self.stochastic:
-                    sample = np.random.choice(a=[False, True], size=(len(y), ), p=[1-self.p, self.p])
-                else:
-                    sample = [True]*len(y)
-                if self.error(y[sample], self._predict(X[sample], temp_weights+w)) < loss:
-                    temp_weights += w
+                if self.error(y, self._predict(X, temp_weights+a*w*self.alpha)) < loss:
+                    temp_weights += a*w*self.alpha
                     self.weights_history += [temp_weights]
                     loss = self.error(y, self._predict(X, temp_weights))
                     self._print(f"Updated Loss: {loss}")
@@ -152,7 +141,8 @@ class ComplexLinearRegression():
         ::param weights: (numpy array)
         ::return: (complex)
         """
-        return np.abs(X.dot(weights))
+        z = X.dot(weights)
+        return np.abs(z)#* np.sign(X.dot(weights).real)
 
     def predict(self, X):
         """
@@ -165,7 +155,8 @@ class ComplexLinearRegression():
         """
         X = np.c_[X, np.ones(len(X))]
         weights = self.weights
-        return np.abs(X.dot(weights))
+        z = X.dot(weights)
+        return np.abs(z)#* np.sign(X.dot(weights).real)
 
 
 class LinearRegression():
@@ -225,7 +216,8 @@ class LinearRegression():
         """
         return np.array([
             random.randint(-10, 10)
-            for i in list(range(n))])
+            for i in list(range(n))])\
+        .astype(float)
 
     def error(self, y, y_pred):
         """
@@ -255,19 +247,14 @@ class LinearRegression():
             
             loss = self.error(y, self._predict(X, temp_weights))
             self._print(f"Initial Loss: {loss}")
-            weights_alpha = [
-                a*(-1.0) * self.alpha,
-                a*(1.0) * self.alpha]
-        
-            for w in weights_alpha:
-                if self.stochastic:
-                    sample = np.random.choice(a=[False, True], size=(len(y), ), p=[1-self.p, self.p])
-                else:
-                    sample = [True]*len(y)
-                if self.error(y[sample], self._predict(X[sample], temp_weights+w)) < loss:
+ 
+            weights_alpha = [1,-1]
 
-                    temp_weights = temp_weights + w
-                    self.weights_history += [temp_weights]
+            for w in weights_alpha:
+                if self.error(y, self._predict(X, temp_weights+a*w*self.alpha)) < loss:
+
+                    temp_weights += a*w*self.alpha
+                    self.weights_history.append(np.array(temp_weights))
                     loss = self.error(y, self._predict(X, temp_weights))
                     self._print(f"Updated Loss: {loss}")
             
@@ -298,7 +285,7 @@ class LinearRegression():
         ::param weights: (numpy array)
         ::return: (complex)
         """
-        return np.array([np.linalg.norm(i) for i in X.dot(weights)])
+        return X.dot(weights)
 
     def predict(self, X):
         """
@@ -311,4 +298,4 @@ class LinearRegression():
         """
         X = np.c_[X, np.ones(len(X))]
         weights = self.weights
-        return np.array([np.linalg.norm(i) for i in X.dot(weights)])
+        return X.dot(weights)
