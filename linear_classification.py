@@ -32,7 +32,10 @@ class ComplexLinearClassification():
         n_iter = 10000,
         verbose = False,
         stochastic = False,
-        p = 0.1
+        p = 0.1,
+        maximum = 10,
+        minimum = 0.001,
+        decay = 0.995
     ):
         """
         Initialising function.
@@ -57,6 +60,9 @@ class ComplexLinearClassification():
         self.weights = []
         self.stochastic = stochastic
         self.p = p
+        self.maximum = maximum
+        self.minimum = minimum
+        self.decay = decay
 
     def _print(self, *args):
         """
@@ -65,6 +71,13 @@ class ComplexLinearClassification():
         if self.verbose:
             print(*args)
 
+    def decaying_function(self, n):
+        """
+        Function to decay the learning rate.
+
+        ::param n: (int)
+        """
+        return self.maximum*(self.decay**n) + self.minimum
 
     def complex_weights(self, n):
         """
@@ -105,7 +118,7 @@ class ComplexLinearClassification():
         """
         return sum((y*1 - y_pred)**2)/len(y)
 
-    def random_search_algorithim(self, X, y):
+    def random_search_algorithim(self, X, y, n):
         """
         Random Search Algorithim for complex numbers polynomial.
         
@@ -117,6 +130,7 @@ class ComplexLinearClassification():
         
         dim = list(range(X.shape[1]))
         random.shuffle(dim)
+        decay = self.decaying_function(n)
         
         for i in dim:
             a = np.zeros((X.shape[1],)); 
@@ -130,8 +144,9 @@ class ComplexLinearClassification():
                 np.transpose([np.tile([0,1,-1], 3), np.repeat([0,1,-1], 3)])]
 
             for w in weights_alpha:
-                if self.error(y, self._predict(X, temp_weights+a*w*self.alpha)) < loss:
-                    temp_weights += a*w*self.alpha
+                change = a*w*decay
+                if self.error(y, self._predict(X, temp_weights+change)) < loss:
+                    temp_weights += change
                     self.weights_history += [temp_weights]
                     loss = self.error(y, self._predict(X, temp_weights))
                     self._print(f"Updated Loss: {loss}")
@@ -151,8 +166,8 @@ class ComplexLinearClassification():
         self.weights = self.complex_weights(X.shape[1])
         self._print("Initial weights: ", self.weights)
         
-        for i in tqdm.tqdm(range(self.n_iter)):
-            self.random_search_algorithim(X, y)
+        for n in tqdm.tqdm(range(self.n_iter)):
+            self.random_search_algorithim(X, y, n)
 
     def _predict(self, X, weights):
         """
@@ -198,7 +213,10 @@ class LinearClassification():
         n_iter = 10000,
         verbose = False,
         stochastic = False,
-        p = 0.1
+        p = 0.1,
+        maximum = 10,
+        minimum = 0.001,
+        decay = 0.995
     ):
         """
         Initialising function.
@@ -223,6 +241,9 @@ class LinearClassification():
         self.weights = []
         self.stochastic = stochastic
         self.p = p
+        self.maximum = maximum
+        self.minimum = minimum
+        self.decay = decay
 
     def _print(self, *args):
         """
@@ -231,6 +252,13 @@ class LinearClassification():
         if self.verbose:
             print(*args)
 
+    def decaying_function(self, n):
+        """
+        Function to decay the learning rate.
+
+        ::param n: (int)
+        """
+        return self.maximum*(self.decay**n) + self.minimum
 
     def _weights(self, n):
         """
@@ -271,7 +299,7 @@ class LinearClassification():
         """
         return sum((y*1 - y_pred)**2)/len(y)
 
-    def random_search_algorithim(self, X, y):
+    def random_search_algorithim(self, X, y, n):
         """
         Random Search Algorithim for complex numbers polynomial.
         
@@ -283,7 +311,8 @@ class LinearClassification():
         
         dim = list(range(X.shape[1]))
         random.shuffle(dim)
-        
+        decay = self.decaying_function(n)
+
         for i in dim:
             a = np.zeros((X.shape[1],)); 
             a[i] = 1
@@ -294,9 +323,10 @@ class LinearClassification():
             weights_alpha = [1,-1]
 
             for w in weights_alpha:
-                if self.error(y, self._predict(X, temp_weights+a*w*self.alpha)) < loss:
+                change = a*w*decay
+                if self.error(y, self._predict(X, temp_weights+change)) < loss:
 
-                    temp_weights += a*w*self.alpha
+                    temp_weights += change
                     self.weights_history.append(np.array(temp_weights))
                     loss = self.error(y, self._predict(X, temp_weights))
                     self._print(f"Updated Loss: {loss}")
@@ -316,8 +346,8 @@ class LinearClassification():
         self.weights = self._weights(X.shape[1])
         self._print("Initial weights: ", self.weights)
         
-        for i in tqdm.tqdm(range(self.n_iter)):
-            self.random_search_algorithim(X, y)
+        for n in tqdm.tqdm(range(self.n_iter)):
+            self.random_search_algorithim(X, y, n)
 
     def _predict(self, X, weights):
         """

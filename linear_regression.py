@@ -30,7 +30,10 @@ class ComplexLinearRegression():
         n_iter = 10000,
         verbose = False,
         stochastic = False,
-        p = 0.1
+        p = 0.1,
+        maximum = 10,
+        minimum = 0.001,
+        decay = 0.995
     ):
         """
         Initialising function.
@@ -53,6 +56,9 @@ class ComplexLinearRegression():
         self.weights = []
         self.stochastic = stochastic
         self.p = p
+        self.maximum = maximum
+        self.minimum = minimum
+        self.decay = decay
 
     def _print(self, *args):
         """
@@ -61,7 +67,14 @@ class ComplexLinearRegression():
         if self.verbose:
             print(*args)
 
+    def decaying_function(self, n):
+        """
+        Function to decay the learning rate.
 
+        ::param n: (int)
+        """
+        return self.maximum*(self.decay**n) + self.minimum
+            
     def complex_weights(self, n):
         """
         Function get initial weights
@@ -83,7 +96,7 @@ class ComplexLinearRegression():
         """
         return sum((y*1 - y_pred)**2)/len(y)
 
-    def random_search_algorithim(self, X, y):
+    def random_search_algorithim(self, X, y, n):
         """
         Random Search Algorithim for complex numbers polynomial.
         
@@ -95,7 +108,8 @@ class ComplexLinearRegression():
         
         dim = list(range(X.shape[1]))
         random.shuffle(dim)
-        
+        decay = self.decaying_function(n)
+
         for i in dim:
             a = np.zeros((X.shape[1],)); 
             a[i] = 1
@@ -108,12 +122,14 @@ class ComplexLinearRegression():
                 np.transpose([np.tile([0,1,-1], 3), np.repeat([0,1,-1], 3)])]
 
             for w in weights_alpha:
-                if self.error(y, self._predict(X, temp_weights+a*w*self.alpha)) < loss:
-                    temp_weights += a*w*self.alpha
-                    self.weights_history += [temp_weights]
-                    loss = self.error(y, self._predict(X, temp_weights))
+                change = a*w*decay
+                error = self.error(y, self._predict(X, temp_weights+change))
+                if error < loss:
+                    temp_weights += change
+                    loss = error
                     self._print(f"Updated Loss: {loss}")
             
+            self.weights_history += [temp_weights]
             self.loss += [loss]
             self.weights = temp_weights
 
@@ -129,8 +145,8 @@ class ComplexLinearRegression():
         self.weights = self.complex_weights(X.shape[1])
         self._print("Initial weights: ", self.weights)
         
-        for i in tqdm.tqdm(range(self.n_iter)):
-            self.random_search_algorithim(X, y)
+        for n in tqdm.tqdm(range(self.n_iter)):
+            self.random_search_algorithim(X, y, n)
 
     def _predict(self, X, weights):
         """
@@ -141,8 +157,7 @@ class ComplexLinearRegression():
         ::param weights: (numpy array)
         ::return: (complex)
         """
-        z = X.dot(weights)
-        return np.abs(z)#* np.sign(X.dot(weights).real)
+        return np.abs(X.dot(weights))
 
     def predict(self, X):
         """
@@ -155,8 +170,7 @@ class ComplexLinearRegression():
         """
         X = np.c_[X, np.ones(len(X))]
         weights = self.weights
-        z = X.dot(weights)
-        return np.abs(z)#* np.sign(X.dot(weights).real)
+        return np.abs(X.dot(weights))
 
 
 class LinearRegression():
@@ -175,7 +189,11 @@ class LinearRegression():
         n_iter = 10000,
         verbose = False,
         stochastic = False,
-        p = 0.1
+        p = 0.1,
+        maximum = 10,
+        minimum = 0.001,
+        decay = 0.995
+
     ):
         """
         Initialising function.
@@ -198,6 +216,10 @@ class LinearRegression():
         self.weights = []
         self.stochastic = stochastic
         self.p = p
+        self.maximum = maximum
+        self.minimum = minimum
+        self.decay = decay
+
 
     def _print(self, *args):
         """
@@ -206,6 +228,13 @@ class LinearRegression():
         if self.verbose:
             print(*args)
 
+    def decaying_function(self, n):
+        """
+        Function to decay the learning rate.
+
+        ::param n: (int)
+        """
+        return self.maximum*(self.decay**n) + self.minimum
 
     def _weights(self, n):
         """
@@ -228,7 +257,7 @@ class LinearRegression():
         """
         return sum((y*1 - y_pred)**2)/len(y)
 
-    def random_search_algorithim(self, X, y):
+    def random_search_algorithim(self, X, y, n):
         """
         Random Search Algorithim for complex numbers polynomial.
         
@@ -240,7 +269,8 @@ class LinearRegression():
         
         dim = list(range(X.shape[1]))
         random.shuffle(dim)
-        
+        decay = self.decaying_function(n)
+
         for i in dim:
             a = np.zeros((X.shape[1],)); 
             a[i] = 1
@@ -251,13 +281,14 @@ class LinearRegression():
             weights_alpha = [1,-1]
 
             for w in weights_alpha:
-                if self.error(y, self._predict(X, temp_weights+a*w*self.alpha)) < loss:
+                change = a*w*decay
+                if self.error(y, self._predict(X, temp_weights+change)) < loss:
 
-                    temp_weights += a*w*self.alpha
-                    self.weights_history.append(np.array(temp_weights))
+                    temp_weights += change
                     loss = self.error(y, self._predict(X, temp_weights))
                     self._print(f"Updated Loss: {loss}")
             
+            self.weights_history.append(np.array(temp_weights))
             self.loss += [loss]
             self.weights = temp_weights
 
@@ -273,8 +304,8 @@ class LinearRegression():
         self.weights = self._weights(X.shape[1])
         self._print("Initial weights: ", self.weights)
         
-        for i in tqdm.tqdm(range(self.n_iter)):
-            self.random_search_algorithim(X, y)
+        for n in tqdm.tqdm(range(self.n_iter)):
+            self.random_search_algorithim(X, y, n)
 
     def _predict(self, X, weights):
         """
