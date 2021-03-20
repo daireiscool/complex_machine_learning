@@ -279,7 +279,7 @@ class MultiLinearRegression():
         ::param z: (complex)
         ::return: (float)
         """
-        return np.mean(z, axis = 1)
+        return np.prod(z, axis = 1)
     
     def activation(self, z):
         """
@@ -288,7 +288,7 @@ class MultiLinearRegression():
         ::param z: (complex)
         ::return: (boolean)
         """
-        return np.mean(z, axis = 1)
+        return np.prod(z, axis = 1)
 
     def error(self, y, y_pred):
         """
